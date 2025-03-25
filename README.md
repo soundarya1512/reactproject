@@ -174,3 +174,5 @@ Please generate a [Github issue](https://github.com/codedthemes/mantis-free-reac
 - [LinkedIn](https://www.linkedin.com/company/codedthemes/)
 - [Instagram](https://www.instagram.com/codedthemes/)
 - [Facebook](https://www.facebook.com/codedthemes)
+#   S e c i r a _ f r o n t e n d  
+ 
