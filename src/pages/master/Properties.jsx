@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getProperties } from "helpers/apiHelper"; // Ensure correct import path
-import { Table, Typography, Spin, Alert, Button, Modal, Form, Input } from "antd";
+import { getProperties, addProperty, updateProperty, deleteProperty } from "helpers/apiHelper";
+import { Table, Typography, Spin, Alert, Button, Modal, Form, Input, message } from "antd";
 import "antd/dist/reset.css";
 
 const Properties = () => {
@@ -16,23 +16,18 @@ const Properties = () => {
     const fetchProperties = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const data = await getProperties();
-        console.log("Fetched Properties:", data);
         setProperties(Array.isArray(data.results) ? data.results : []);
       } catch (err) {
-        console.error("Error fetching properties:", err);
         setError("Failed to fetch properties");
       } finally {
         setLoading(false);
       }
     };
-
     fetchProperties();
   }, []);
 
-  // Open modal for adding a new property
   const handleAdd = () => {
     setIsEditing(false);
     setCurrentProperty(null);
@@ -40,7 +35,6 @@ const Properties = () => {
     setIsModalOpen(true);
   };
 
-  // Open modal for editing a property
   const handleEdit = (record) => {
     setIsEditing(true);
     setCurrentProperty(record);
@@ -48,61 +42,83 @@ const Properties = () => {
     setIsModalOpen(true);
   };
 
-  // Handle delete property
-  const handleDelete = (id) => {
-    setProperties((prev) => prev.filter((item) => item.id !== id));
+  const handleDelete = async (id) => {
+    const response = await deleteProperty(id);
+    if (response.success) {
+      setProperties((prev) => prev.filter((item) => item.id !== id));
+      message.success("Property deleted successfully");
+    } else {
+      message.error(response.error || "Failed to delete property");
+    }
   };
 
-  // Handle form submission (Add or Edit)
-  const handleFormSubmit = (values) => {
+  const handleFormSubmit = async (values) => {
     if (isEditing) {
-      // Edit logic (for now, just updating UI)
-      setProperties((prev) =>
-        prev.map((item) => (item.id === currentProperty.id ? { ...item, ...values } : item))
-      );
+      const updatedProperty = { ...currentProperty, ...values };
+      const response = await updateProperty(currentProperty.id, updatedProperty);
+
+      if (response.success) {
+        setProperties((prev) =>
+          prev.map((item) =>
+            item.id === currentProperty.id ? response.data : item
+          )
+        );
+        message.success("Property updated successfully");
+      } else {
+        message.error(response.error || "Failed to update property");
+      }
     } else {
-      // Add logic (for now, just adding to UI)
-      const newProperty = { id: properties.length + 1, ...values };
-      setProperties([...properties, newProperty]);
+      const response = await addProperty(values);
+      if (response.success) {
+        setProperties([...properties, response.data]);
+        message.success("Property added successfully");
+      } else {
+        message.error(response.error || "Failed to add property");
+      }
     }
+
     setIsModalOpen(false);
   };
 
-  const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Title", dataIndex: "title", key: "title" },
-    { title: "Location", dataIndex: "location", key: "location" },
-    { title: "Price", dataIndex: "price", key: "price" },
-    { title: "Type", dataIndex: "type", key: "type" },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <>
-          <Button type="link" onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id)}>
-            Delete
-          </Button>
-        </>
-      ),
-    },
-  ];
+  const columns = Object.keys(properties[0] || {}).map((key) => ({
+    title: key.replace(/_/g, " ").toUpperCase(),
+    dataIndex: key,
+    key: key,
+    render: (text) => (text ? text.toString() : "-"),
+  }));
+
+  columns.push({
+    title: "Actions",
+    key: "actions",
+    render: (_, record) => (
+      <>
+        <Button type="link" onClick={() => handleEdit(record)}>Edit</Button>
+        <Button type="link" danger onClick={() => handleDelete(record.id)}>Delete</Button>
+      </>
+    ),
+  });
 
   return (
     <div>
+      <Typography.Title level={2}>Property List</Typography.Title>
+
       <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
         Add Property
       </Button>
-      {error && <Alert message={error} type="error" showIcon />}
+
+      {error && <Alert message={error} type="error" showIcon style={{ marginBottom: 16 }} />}
+
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table dataSource={properties} columns={columns} rowKey="id" />
+        <Table 
+          dataSource={properties} 
+          columns={columns} 
+          rowKey="id"
+          scroll={{ x: "max-content" }}
+        />
       )}
 
-      {/* Modal for Add/Edit */}
       <Modal
         title={isEditing ? "Edit Property" : "Add Property"}
         open={isModalOpen}
@@ -110,18 +126,18 @@ const Properties = () => {
         onOk={() => form.submit()}
       >
         <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-          <Form.Item name="title" label="Property Title" rules={[{ required: true, message: "Please enter property title" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="location" label="Location" rules={[{ required: true, message: "Please enter location" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="price" label="Price" rules={[{ required: true, message: "Please enter price" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="type" label="Type" rules={[{ required: true, message: "Please enter property type" }]}>
-            <Input />
-          </Form.Item>
+          {Object.keys(properties[0] || {})
+            .filter((key) => !["id", "added_by", "last_edited_by"].includes(key)) // Exclude these fields
+            .map((key) => (
+              <Form.Item 
+                key={key} 
+                name={key} 
+                label={key.replace(/_/g, " ").toUpperCase()} 
+                rules={[{ required: key === "property_name", message: "Property Name is required" }]}
+              >
+                <Input />
+              </Form.Item>
+            ))}
         </Form>
       </Modal>
     </div>

@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-
-// material-ui
+import { useNavigate } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,9 +12,23 @@ import LogoutOutlined from '@ant-design/icons/LogoutOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import WalletOutlined from '@ant-design/icons/WalletOutlined';
 
-// ==============================|| HEADER PROFILE - PROFILE TAB ||============================== //
+// Import logout function
+
+
+import { logoutUser } from "@/helpers/apiHelper"; 
+
+
+
+
 
 export default function ProfileTab() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logoutUser(); // Clears tokens and redirects to login
+    navigate('/login'); // Ensure navigation after logout
+  };
+
   return (
     <List component="nav" sx={{ p: 0, '& .MuiListItemIcon-root': { minWidth: 32 } }}>
       <ListItemButton>
@@ -30,7 +43,6 @@ export default function ProfileTab() {
         </ListItemIcon>
         <ListItemText primary="View Profile" />
       </ListItemButton>
-
       <ListItemButton>
         <ListItemIcon>
           <ProfileOutlined />
@@ -43,7 +55,7 @@ export default function ProfileTab() {
         </ListItemIcon>
         <ListItemText primary="Billing" />
       </ListItemButton>
-      <ListItemButton>
+      <ListItemButton onClick={handleLogout}>
         <ListItemIcon>
           <LogoutOutlined />
         </ListItemIcon>
@@ -53,4 +65,7 @@ export default function ProfileTab() {
   );
 }
 
-ProfileTab.propTypes = { handleLogout: PropTypes.func };
+ProfileTab.propTypes = {
+  handleLogout: PropTypes.func,
+};
+

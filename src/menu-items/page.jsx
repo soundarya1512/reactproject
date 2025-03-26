@@ -1,9 +1,9 @@
 // assets
-import { LoginOutlined, ProfileOutlined } from '@ant-design/icons';
+import { ProfileOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
-  LoginOutlined,
+
   ProfileOutlined
 };
 
@@ -14,14 +14,7 @@ const pages = {
   title: 'Authentication',
   type: 'group',
   children: [
-    {
-      id: 'login1',
-      title: 'Login',
-      type: 'item',
-      url: '/login',
-      icon: icons.LoginOutlined,
-      target: true
-    },
+
     {
       id: 'register1',
       title: 'Register',

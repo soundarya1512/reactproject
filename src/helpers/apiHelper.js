@@ -3,7 +3,6 @@ import axios from 'axios';
 // Load Base URL from environment variables or use default
 const BASE_URL = import.meta.env.VITE_APP_BASE_URL || 'http://44.199.13.54';
 
-
 // Create an Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -38,13 +37,11 @@ export const AUTH_ENDPOINTS = {
 };
 
 // ====== Authentication Functions ====== //
-// Check if user is authenticated
 export const isAuthenticated = async () => {
   const token = getAccessToken();
   if (!token) return false;
 
   try {
-    // Verify token validity
     await axios.post(AUTH_ENDPOINTS.verify, { token });
     return true;
   } catch (error) {
@@ -53,7 +50,6 @@ export const isAuthenticated = async () => {
   }
 };
 
-// Refresh Access Token
 const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
@@ -62,75 +58,51 @@ const refreshAccessToken = async () => {
   }
 
   try {
-    console.log("Attempting to refresh token with:", refreshToken);
     const response = await axios.post(AUTH_ENDPOINTS.refresh, { refresh: refreshToken });
-    console.log("New Access Token:", response.data.access);
-
     setAuthTokens(response.data.access, refreshToken);
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
     return response.data.access;
   } catch (error) {
     console.error("Token refresh failed:", error.response?.data || error);
-    removeAuthTokens(); // Clear invalid tokens
+    removeAuthTokens();
     return null;
   }
 };
 
-
-// Login Function (Superuser Only)
-// Login Function (Allow All Users)
 export const loginUser = async (email, password) => {
   try {
     const response = await axios.post(AUTH_ENDPOINTS.login, { email, password });
     const { access, refresh } = response.data;
-
-    // Fetch user details
     const userResponse = await axios.get(AUTH_ENDPOINTS.user, {
       headers: { Authorization: `Bearer ${access}` },
     });
-
-    console.log('User Response:', userResponse.data);
-
-    const user = userResponse.data;
-
-    // Set tokens in local storage
     setAuthTokens(access, refresh);
-
-    return { success: true, data: user };
+    return { success: true, data: userResponse.data };
   } catch (error) {
     console.error('Login Error:', error.response?.data || error);
     return { success: false, error: error.response?.data || 'Login failed' };
   }
 };
 
-
-// Fetch User Profile
 export const getUserProfile = async () => {
   try {
     const response = await apiClient.get(AUTH_ENDPOINTS.user);
-    return response.data; // Returns full user data (including first_name & email)
+    return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    return null; // Return null if there's an error
+    return null;
   }
 };
 
-// Logout Function
 export const logoutUser = () => {
   removeAuthTokens();
-  window.location.replace('/login'); // Redirect to login instead of reload
+  window.location.replace('/login');
 };
 
 // ====== Master Table API Functions ====== //
-// Fetch Country List
 export const getCountries = async () => {
   try {
-    console.log("Fetching countries...");  // Debugging
-    console.log("Token:", localStorage.getItem("access_token"));  // Debugging token
-
     const response = await apiClient.get('/countries/');
-    console.log('API Response:', response.data);
-    
     return response.data;
   } catch (error) {
     console.error('Error fetching countries:', error.response?.data || error.message);
@@ -138,8 +110,6 @@ export const getCountries = async () => {
   }
 };
 
-
-// Fetch State List
 export const getStates = async () => {
   try {
     const response = await apiClient.get('/states/');
@@ -150,7 +120,6 @@ export const getStates = async () => {
   }
 };
 
-// Fetch City List
 export const getCities = async () => {
   try {
     const response = await apiClient.get('/cities/');
@@ -161,7 +130,6 @@ export const getCities = async () => {
   }
 };
 
-// Fetch Property List
 export const getProperties = async () => {
   try {
     const response = await apiClient.get('/properties/');
@@ -172,7 +140,36 @@ export const getProperties = async () => {
   }
 };
 
-// ====== Axios Interceptor for Auto Token Refresh ====== //
+export const addProperty = async (propertyData) => {
+  try {
+    const response = await apiClient.post('/properties/', propertyData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error adding property:', error.response?.data || error);
+    return { success: false, error: error.response?.data || 'Failed to add property' };
+  }
+};
+
+export const updateProperty = async (id, propertyData) => {
+  try {
+    const response = await apiClient.put(`/properties/${id}/`, propertyData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error updating property:', error.response?.data || error);
+    return { success: false, error: error.response?.data || 'Failed to update property' };
+  }
+};
+
+export const deleteProperty = async (id) => {
+  try {
+    await apiClient.delete(`/properties/${id}/`);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting property:', error.response?.data || error);
+    return { success: false, error: error.response?.data || 'Failed to delete property' };
+  }
+};
+
 apiClient.interceptors.request.use(
   async (config) => {
     let token = getAccessToken();
@@ -182,15 +179,11 @@ apiClient.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("Request Headers:", config.headers); // Debugging
-    } else {
-      console.warn("No token found, request might fail.");
     }
 
     return config;
   },
   (error) => Promise.reject(error)
 );
-
 
 export default apiClient;
