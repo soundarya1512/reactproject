@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -30,11 +31,9 @@ import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import avatar1 from 'assets/images/users/avatar-1.png';
 
-// apiHelper
-//import { apiClient, AUTH_ENDPOINTS, removeAuthTokens } from "../../../../helpers/apiHelper";
+// API imports
+import { getUserProfile, updateUserProfile } from '@/Helpers/apiHelper';
 
-
-// tab panel wrapper
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
@@ -52,12 +51,12 @@ function a11yProps(index) {
 
 export default function Profile() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(0);
   const [user, setUser] = useState(null);
 
-  // Fetch user data
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -70,22 +69,18 @@ export default function Profile() {
     fetchUser();
   }, []);
 
-  // Handle dropdown toggle
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };
 
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
+    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
     setOpen(false);
   };
 
-  // Handle logout
   const handleLogout = () => {
     removeAuthTokens();
-    window.location.reload(); // Redirect or clear state
+    window.location.replace('/login');
   };
 
   return (
@@ -103,21 +98,15 @@ export default function Profile() {
         aria-haspopup="true"
         onClick={handleToggle}
       >
-        <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center', p: 0.5 }}>
-          <Avatar alt="profile user" src={user?.avatar || avatar1} size="sm" />
+        <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center', p: 0.5 }} onClick={() => navigate('/profile')}>
+          <Avatar alt="profile user" src={user?.profile_picture || avatar1} size="sm" />
           <Typography variant="subtitle1" sx={{ textTransform: 'capitalize' }}>
             {user ? user.first_name : 'User'}
           </Typography>
         </Stack>
       </ButtonBase>
-      <Popper
-        placement="bottom-end"
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal
-      >
+
+      <Popper placement="bottom-end" open={open} anchorEl={anchorRef.current} role={undefined} transition disablePortal>
         {({ TransitionProps }) => (
           <Transitions type="grow" position="top-right" in={open} {...TransitionProps}>
             <Paper sx={{ boxShadow: theme.customShadows.z1, width: 290, minWidth: 240, maxWidth: { xs: 250, md: 290 } }}>
@@ -127,11 +116,13 @@ export default function Profile() {
                     <Grid container justifyContent="space-between" alignItems="center">
                       <Grid>
                         <Stack direction="row" sx={{ gap: 1.25, alignItems: 'center' }}>
-                          <Avatar alt="profile user" src={user?.avatar || avatar1} sx={{ width: 32, height: 32 }} />
+                          <Avatar alt="profile user" src={user?.profile_picture || avatar1} sx={{ width: 32, height: 32 }} />
                           <Stack>
-                            <Typography variant="h6">{user ? `${user.first_name} ${user.last_name}` : 'User'}</Typography>
+                            <Typography variant="h6">
+                              {user ? `${user.first_name} ${user.last_name}` : 'User'}
+                            </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {user?.role || 'User'}
+                              {user?.role || 'Admin'}
                             </Typography>
                           </Stack>
                         </Stack>
@@ -147,7 +138,7 @@ export default function Profile() {
                   </CardContent>
 
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs variant="fullWidth" value={value} onChange={(event, newValue) => setValue(newValue)}>
+                    <Tabs variant="fullWidth" value={value} onChange={(e, newValue) => setValue(newValue)}>
                       <Tab
                         sx={{
                           display: 'flex',
@@ -192,4 +183,8 @@ export default function Profile() {
   );
 }
 
-TabPanel.propTypes = { children: PropTypes.node, value: PropTypes.number, index: PropTypes.number };
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  value: PropTypes.number,
+  index: PropTypes.number
+};

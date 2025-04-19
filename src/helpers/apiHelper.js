@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Load Base URL from environment variables or use default
-const BASE_URL = import.meta.env.VITE_APP_BASE_URL || 'http://44.199.13.54';
+const BASE_URL = import.meta.env.VITE_APP_BASE_URL;
 
 // Create an Axios instance
 const apiClient = axios.create({
@@ -12,19 +12,16 @@ const apiClient = axios.create({
 });
 
 // ====== Token Management ====== //
-// Store tokens in localStorage
 const setAuthTokens = (access, refresh) => {
   localStorage.setItem('access_token', access);
   localStorage.setItem('refresh_token', refresh);
 };
 
-// Remove tokens from localStorage
 const removeAuthTokens = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
 };
 
-// Get stored tokens
 const getAccessToken = () => localStorage.getItem('access_token');
 const getRefreshToken = () => localStorage.getItem('refresh_token');
 
@@ -34,6 +31,7 @@ export const AUTH_ENDPOINTS = {
   refresh: `${BASE_URL}/auth/jwt/refresh/`,
   verify: `${BASE_URL}/auth/jwt/verify/`,
   user: `${BASE_URL}/auth/users/me/`,
+  changePassword: `${BASE_URL}/auth/users/set_password/`,
 };
 
 // ====== Authentication Functions ====== //
@@ -53,15 +51,19 @@ export const isAuthenticated = async () => {
 const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
-    console.warn("No refresh token found, cannot refresh access token.");
+    console.warn("No refresh token found, logging out...");
+    removeAuthTokens();
     return null;
   }
 
   try {
     const response = await axios.post(AUTH_ENDPOINTS.refresh, { refresh: refreshToken });
-    setAuthTokens(response.data.access, refreshToken);
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
-    return response.data.access;
+    const newAccessToken = response.data.access;
+
+    setAuthTokens(newAccessToken, refreshToken);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+
+    return newAccessToken;
   } catch (error) {
     console.error("Token refresh failed:", error.response?.data || error);
     removeAuthTokens();
@@ -76,6 +78,7 @@ export const loginUser = async (email, password) => {
     const userResponse = await axios.get(AUTH_ENDPOINTS.user, {
       headers: { Authorization: `Bearer ${access}` },
     });
+
     setAuthTokens(access, refresh);
     return { success: true, data: userResponse.data };
   } catch (error) {
@@ -97,6 +100,23 @@ export const getUserProfile = async () => {
 export const logoutUser = () => {
   removeAuthTokens();
   window.location.replace('/login');
+};
+
+// ====== Password Change ====== //
+export const changePassword = async (oldPassword, newPassword) => {
+  try {
+    const response = await apiClient.post(AUTH_ENDPOINTS.changePassword, {
+      current_password: oldPassword,
+      new_password: newPassword,
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Change password failed:', error.response?.data || error);
+    return {
+      success: false,
+      error: error.response?.data || { detail: 'Password update failed' },
+    };
+  }
 };
 
 // ====== Master Table API Functions ====== //
@@ -170,6 +190,119 @@ export const deleteProperty = async (id) => {
   }
 };
 
+
+
+export const updateUserProfile = async (profileData) => {
+  try {
+    const response = await apiClient.patch('/auth/users/me/', profileData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error updating user profile:', error.response?.data || error);
+    return {
+      success: false,
+      error: error.response?.data || 'Profile update failed',
+    };
+  }
+};
+
+
+
+
+
+
+// Role APIs
+export const getRoles = async () => {
+  try {
+    const response = await apiClient.get('/get-roles/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    return [];
+  }
+};
+
+
+export const createRole = async (roleName) => {
+  try {
+    const response = await apiClient.post('/create-role/', { name: roleName });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating role:', error);
+    return null;
+  }
+};
+
+export const assignRoleToUser = async (userId, roleId) => {
+  try {
+    const response = await apiClient.post('/assign-role/', {
+      user_id: userId,
+      role_id: roleId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning role:', error);
+    return null;
+  }
+};
+
+export const getUsers = async () => {
+  try {
+    const response = await apiClient.get('/users/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return [];
+  }
+};
+
+
+
+
+
+// ====== Permissions API ======
+
+export const getPermissions = async () => {
+  try {
+    const response = await apiClient.get('/permissions/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permissions:', error);
+    return [];
+  }
+};
+
+export const assignPermissionsToRole = async (roleId, permissionIds) => {
+  try {
+    const response = await apiClient.post(`/roles/${roleId}/assign-permissions/`, {
+      permissions: permissionIds,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning permissions:', error);
+    return null;
+  }
+};
+
+export const getRolePermissions = async (roleId) => {
+  try {
+    const response = await apiClient.get(`/roles/${roleId}/permissions/`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching role permissions:', error);
+    return [];
+  }
+};
+
+
+
+
+
+
+// ====== Axios Interceptors ====== //
 apiClient.interceptors.request.use(
   async (config) => {
     let token = getAccessToken();
@@ -184,6 +317,26 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const newAccessToken = await refreshAccessToken();
+      if (newAccessToken) {
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        return apiClient(originalRequest);
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default apiClient;

@@ -4,13 +4,13 @@ import pages from './page';
 
 import masterTables from './masterTables'; 
 
-
+import role from './role'; 
 
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-  items: [dashboard, pages, masterTables]
+  items: [dashboard, pages, masterTables, role]
 };
 
 export default menuItems;

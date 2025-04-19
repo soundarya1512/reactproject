@@ -1,6 +1,4 @@
 import { useMemo } from 'react';
-
-// material-ui
 import useMediaQuery from '@mui/material/useMediaQuery';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,27 +6,24 @@ import Toolbar from '@mui/material/Toolbar';
 // project imports
 import AppBarStyled from './AppBarStyled';
 import HeaderContent from './HeaderContent';
-import IconButton from 'components/@extended/IconButton';
+import IconButton from '@mui/material/IconButton';
 
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from 'config';
 
-// assets
-import MenuFoldOutlined from '@ant-design/icons/MenuFoldOutlined';
-import MenuUnfoldOutlined from '@ant-design/icons/MenuUnfoldOutlined';
-
-// ==============================|| MAIN LAYOUT - HEADER ||============================== //
+// icons
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
 export default function Header() {
   const downLG = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-  const { menuMaster } = useGetMenuMaster();
-  const drawerOpen = menuMaster.isDashboardDrawerOpened;
+  const { menuMaster } = useGetMenuMaster() || {};
+  const drawerOpen = menuMaster?.isDashboardDrawerOpened ?? false; // Safe default value
 
-  // header content
+  // Memoized Header Content
   const headerContent = useMemo(() => <HeaderContent />, []);
 
-  // common header
+  // Toolbar Content
   const mainHeader = (
     <Toolbar>
       <IconButton
@@ -36,12 +31,10 @@ export default function Header() {
         onClick={() => handlerDrawerOpen(!drawerOpen)}
         edge="start"
         color="secondary"
-        variant="light"
         sx={(theme) => ({
           color: 'text.primary',
           bgcolor: drawerOpen ? 'transparent' : 'grey.100',
-          ...theme.applyStyles('dark', { bgcolor: drawerOpen ? 'transparent' : 'background.default' }),
-          ml: { xs: 0, lg: -2 }
+          ml: { xs: 0, lg: -2 },
         })}
       >
         {!drawerOpen ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -50,8 +43,8 @@ export default function Header() {
     </Toolbar>
   );
 
-  // app-bar params
-  const appBar = {
+  // AppBar Configuration
+  const appBarProps = {
     position: 'fixed',
     color: 'inherit',
     elevation: 0,
@@ -66,11 +59,11 @@ export default function Header() {
   return (
     <>
       {!downLG ? (
-        <AppBarStyled open={drawerOpen} {...appBar}>
+        <AppBarStyled open={drawerOpen} {...appBarProps}>
           {mainHeader}
         </AppBarStyled>
       ) : (
-        <AppBar {...appBar}>{mainHeader}</AppBar>
+        <AppBar {...appBarProps}>{mainHeader}</AppBar>
       )}
     </>
   );

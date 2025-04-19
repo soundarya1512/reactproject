@@ -23,9 +23,10 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: [
-        { find: '@', replacement: path.resolve(__dirname, 'src') }, // Correct alias syntax
+        { find: '@', replacement: path.resolve(__dirname, 'src') },
       ],
     },
+    
     base: API_URL, 
     plugins: [react(), jsconfigPaths()],
   };

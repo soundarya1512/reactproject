@@ -100,7 +100,7 @@ const Properties = () => {
 
   return (
     <div>
-      <Typography.Title level={2}>Property List</Typography.Title>
+     
 
       <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
         Add Property

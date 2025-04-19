@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
-
+import RolePage from 'pages/role';
 // render- Dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
 
@@ -27,6 +27,17 @@ const OwnershipType = Loadable(lazy(() => import('pages/master/OwnershipType')))
 const BHKType = Loadable(lazy(() => import('pages/master/BHKType')));
 const PropertyType = Loadable(lazy(() => import('pages/master/PropertyType')));
 const DocumentType = Loadable(lazy(() => import('pages/master/DocumentType')));
+
+const Profile = Loadable(lazy(() => import('@/layout/Dashboard/Header/HeaderContent/Profile')));
+const EditProfile = Loadable(lazy(() => import('@/layout/Dashboard/Header/HeaderContent/Profile/EditProfile')));
+
+
+
+
+
+
+
+
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -74,7 +85,20 @@ const MainRoutes = {
         { path: 'master/ownership-type', element: <OwnershipType /> },
         { path: 'master/bhk-type', element: <BHKType /> },
         { path: 'master/property-type', element: <PropertyType /> },
-        { path: 'master/document-type', element: <DocumentType /> }
+        { path: 'master/document-type', element: <DocumentType /> },
+        {
+          path: 'profile',
+          element: <Profile />
+        },
+        {
+          path: 'edit-profile',
+          element: <EditProfile />
+        },
+        {
+          path: 'role', 
+          element: <RolePage />
+        }
+        
       ]
     }
   ]
