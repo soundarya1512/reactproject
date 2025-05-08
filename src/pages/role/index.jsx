@@ -1,110 +1,108 @@
+// pages/role/index.jsx
 import React, { useEffect, useState } from 'react';
-import {
-  getRoles,
-  createRole,
-  getUsers,
-  assignRoleToUser,
-  getPermissions,
-  assignPermissionsToRole
-} from 'helpers/apiHelper';
+import { getRoles, deleteRole } from '../../helpers/apiHelper';
+import './RoleTable.css';
+import { useNavigate } from "react-router-dom";
 
-import CreateRoleForm from './CreateRoleForm';
-import AssignRoleForm from './AssignRoleForm';
-import AssignPermissionForm from './AssignPermissionForm';
-
-import RoleList from './RoleList';
 const RolePage = () => {
-  const [roleName, setRoleName] = useState('');
+  const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [permissions, setPermissions] = useState([]);
-  const [selectedPermissions, setSelectedPermissions] = useState([]);
-  const [selectedRoleForPermission, setSelectedRoleForPermission] = useState('');
-  const [selectedUser, setSelectedUser] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rolesPerPage] = useState(10); // Show 5 roles per page
 
   useEffect(() => {
-    loadRoles();
-    loadUsers();
-    loadPermissions();
+    const fetchRoles = async () => {
+      try {
+        const data = await getRoles();
+        setRoles(data);
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+      }
+    };
+    fetchRoles();
   }, []);
 
-  const loadRoles = async () => {
-    const rolesData = await getRoles();
-    setRoles(Array.isArray(rolesData) ? rolesData : []);
+  const handleEdit = (id) => {
+    navigate(`/edit-role/${id}`);
   };
 
-  const loadUsers = async () => {
-    const usersData = await getUsers();
-    setUsers(Array.isArray(usersData) ? usersData : []);
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this role?')) {
+      const response = await deleteRole(id);
+      if (response.success) {
+        alert('Role deleted successfully!');
+        setRoles(roles.filter(role => role.id !== id));
+      } else {
+        alert('Failed to delete role');
+      }
+    }
   };
 
-  const loadPermissions = async () => {
-    const permissionsData = await getPermissions();
-    setPermissions(Array.isArray(permissionsData) ? permissionsData : []);
+  const handleAddRoleClick = () => {
+    navigate("/add-role");
   };
 
-  const handleCreateRole = async (e) => {
-    e.preventDefault();
-    await createRole(roleName);
-    setRoleName('');
-    loadRoles();
-  };
-
-  const handleAssignRole = async (e) => {
-    e.preventDefault();
-    await assignRoleToUser(selectedUser, selectedRole);
-    setSelectedUser('');
-    setSelectedRole('');
-    alert('Role assigned to user!');
-  };
-
-  const handleAssignPermissions = async (e) => {
-    e.preventDefault();
-    await assignPermissionsToRole(selectedRoleForPermission, selectedPermissions);
-    setSelectedPermissions([]);
-    setSelectedRoleForPermission('');
-    alert('Permissions assigned to role!');
-  };
-
-  const handlePermissionChange = (permissionId) => {
-    setSelectedPermissions((prev) =>
-      prev.includes(permissionId)
-        ? prev.filter((id) => id !== permissionId)
-        : [...prev, permissionId]
-    );
-  };
+  // Pagination logic
+  const indexOfLastRole = currentPage * rolesPerPage;
+  const indexOfFirstRole = indexOfLastRole - rolesPerPage;
+  const currentRoles = roles.slice(indexOfFirstRole, indexOfLastRole);
+  const totalPages = Math.ceil(roles.length / rolesPerPage);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Role Management</h1>
+    <div className="role-table-container">
+      <div className="role-table-header">
+        <h2>Roles List</h2>
+        <button className="add-role-button" onClick={handleAddRoleClick}>+ Add Role</button>
+      </div>
 
-      <CreateRoleForm
-        roleName={roleName}
-        setRoleName={setRoleName}
-        handleCreateRole={handleCreateRole}
-      />
-      <RoleList roles={roles} />
+      <table className="role-table">
+        <thead>
+          <tr>
+            <th>Role ID</th>
+            <th>Role Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentRoles.map(role => (
+            <tr key={role.id}>
+              <td>{role.id}</td>
+              <td>{role.name}</td>
+              <td>
+                <button className="action-btn edit-btn" onClick={() => handleEdit(role.id)}>Edit</button>
+                <button className="action-btn delete-btn" onClick={() => handleDelete(role.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      <AssignRoleForm
-        users={users}
-        roles={roles}
-        selectedUser={selectedUser}
-        setSelectedUser={setSelectedUser}
-        selectedRole={selectedRole}
-        setSelectedRole={setSelectedRole}
-        handleAssignRole={handleAssignRole}
-      />
+      {/* Pagination controls */}
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
 
-      <AssignPermissionForm
-        roles={roles}
-        permissions={permissions}
-        selectedRoleForPermission={selectedRoleForPermission}
-        setSelectedRoleForPermission={setSelectedRoleForPermission}
-        selectedPermissions={selectedPermissions}
-        handlePermissionChange={handlePermissionChange}
-        handleAssignPermissions={handleAssignPermissions}
-      />
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            className={currentPage === i + 1 ? 'active-page' : ''}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

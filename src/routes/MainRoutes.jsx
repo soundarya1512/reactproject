@@ -5,7 +5,8 @@ import { Navigate } from 'react-router-dom';
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
-import RolePage from 'pages/role';
+import RolePage from 'pages/role'; 
+
 // render- Dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/default')));
 
@@ -31,13 +32,13 @@ const DocumentType = Loadable(lazy(() => import('pages/master/DocumentType')));
 const Profile = Loadable(lazy(() => import('@/layout/Dashboard/Header/HeaderContent/Profile')));
 const EditProfile = Loadable(lazy(() => import('@/layout/Dashboard/Header/HeaderContent/Profile/EditProfile')));
 
+const AddRoleForm = Loadable(lazy(() => import('pages/role/AddRole')));
+const EditRoleForm = Loadable(lazy(() => import('pages/role/EditRole')));
 
-
-
-
-
-
-
+// users - Removed static import
+const IndexUser = Loadable(lazy(() => import('pages/users/IndexUser')));
+const AddUser = Loadable(lazy(() => import('pages/users/AddUser')));
+const EditUser = Loadable(lazy(() => import('pages/users/EditUser')));
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -86,19 +87,29 @@ const MainRoutes = {
         { path: 'master/bhk-type', element: <BHKType /> },
         { path: 'master/property-type', element: <PropertyType /> },
         { path: 'master/document-type', element: <DocumentType /> },
+        { path: 'profile', element: <Profile /> },
+        { path: 'edit-profile', element: <EditProfile /> },
+        { path: 'role', element: <RolePage />},
         {
-          path: 'profile',
-          element: <Profile />
+          path: 'add-role',
+          element: <AddRoleForm />
         },
         {
-          path: 'edit-profile',
-          element: <EditProfile />
+          path: 'edit-role/:id',
+          element: <EditRoleForm />
         },
         {
-          path: 'role', 
-          element: <RolePage />
+          path: 'users',
+          element: <IndexUser />
+        },
+        {
+          path: 'add-user',
+          element: <AddUser />
+        },
+        {
+          path: 'edit-user/:id',
+          element: <EditUser />
         }
-        
       ]
     }
   ]

@@ -132,13 +132,26 @@ export const getCountries = async () => {
 
 export const getStates = async () => {
   try {
-    const response = await apiClient.get('/states/');
+    const response = await apiClient.get('states/?page=${page}');
     return response.data;
   } catch (error) {
     console.error('Error fetching states:', error.response?.data || error.message);
     return [];
   }
 };
+
+
+// export const getStates = async (page = 1) => {
+//   const res = await fetch(`states/?page=${page}`);
+//   if (!res.ok) throw new Error("Failed to fetch states");
+//   return await res.json();
+// };
+
+// export const getCountries = async () => {
+//   const res = await fetch(`https://api.pyt.goitprojects.com/countries/`);
+//   if (!res.ok) throw new Error("Failed to fetch countries");
+//   return await res.json();
+// };
 
 export const getCities = async () => {
   try {
@@ -210,11 +223,21 @@ export const updateUserProfile = async (profileData) => {
 };
 
 
-
-
+///////////////start::role///////////////////////////////////
 
 
 // Role APIs
+// export const getRoles = async () => {
+//   try {
+//     const response = await apiClient.get('/ ');
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error fetching roles:', error);
+//     return [];
+//   }
+// };
+
+
 export const getRoles = async () => {
   try {
     const response = await apiClient.get('/get-roles/');
@@ -226,15 +249,85 @@ export const getRoles = async () => {
 };
 
 
-export const createRole = async (roleName) => {
+
+
+// helpers/apiHelper.js
+
+export const createRole = async (data) => {
   try {
-    const response = await apiClient.post('/create-role/', { name: roleName });
+    // data should be { name: string, permissions: number[] }
+    const response = await apiClient.post('/create-role/', data);
     return response.data;
   } catch (error) {
-    console.error('Error creating role:', error);
+    console.error('Error creating role:', {
+      status: error.response?.status,
+      data:   error.response?.data
+    });
     return null;
   }
 };
+ 
+
+
+
+export const deleteRole = async (id) => {
+  try {
+    await apiClient.delete(`/delete-role/${id}/`);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting role:', error);
+    return { success: false, error: error.response?.data || 'Failed to delete role' };
+  }
+};
+
+// Update role API function
+export const updateRole = async (id, roleData) => {
+  try {
+    const response = await apiClient.put(`/edit-role/${id}/`, roleData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating role:', error);
+    throw error; // Make sure errors are thrown to be handled in the calling component
+  }
+};
+
+///////////////end::role///////////////////////////////////
+
+///////////////start::ownership///////////////////////////////////
+//get ownership data
+export const getOwnership = async () => {
+  try {
+    const response = await apiClient.get('/ownership-types/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching ownership:', error);
+    return [];
+  }
+};
+
+//delete ownership
+export const deleteOwnership = async (id) => {
+  try {
+    await apiClient.delete(`/delete-ownership/${id}/`);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting ownership:', error);
+    return { success: false, error: error.response?.data || 'Failed to delete ownership' };
+  }
+};
+
+// Update ownership 
+export const updateOwnership = async (id, ownershipData) => {
+  try {
+    const response = await apiClient.put(`/edit-ownership/${id}/`, ownershipData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating ownership:', error);
+    throw error; // Make sure errors are thrown to be handled in the calling component
+  }
+};
+
+///////////////end::ownership///////////////////////////////////
 
 export const assignRoleToUser = async (userId, roleId) => {
   try {
@@ -248,7 +341,9 @@ export const assignRoleToUser = async (userId, roleId) => {
     return null;
   }
 };
+/////////////////////start :: user///////////////////////////////
 
+//get user
 export const getUsers = async () => {
   try {
     const response = await apiClient.get('/users/');
@@ -259,21 +354,54 @@ export const getUsers = async () => {
   }
 };
 
+//add user
+
+export const addUsers = async (payload) => {
+  try {
+    const response = await apiClient.post('/users/', payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding user:', error);
+    throw error;
+  }
+};
 
 
+///delete user
+export const deleteUser = async (id) => {
+  try {
+    const response = await apiClient.delete(`/users/${id}`);
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return { success: false };
+  }
+};
+// Update user 
+export const updateUser = async (id, ownershipData) => {
+  try {
+    const response = await apiClient.put(`/edit-ownership/${id}/`, ownershipData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating ownership:', error);
+    throw error; // Make sure errors are thrown to be handled in the calling component
+  }
+};
 
-
+/////////////////////edit :: user///////////////////////////////
 // ====== Permissions API ======
 
 export const getPermissions = async () => {
   try {
-    const response = await apiClient.get('/permissions/');
+    const response = await apiClient.get('/get-permissions/');
     return response.data;
   } catch (error) {
     console.error('Error fetching permissions:', error);
     return [];
   }
 };
+
+
 
 export const assignPermissionsToRole = async (roleId, permissionIds) => {
   try {
@@ -287,6 +415,7 @@ export const assignPermissionsToRole = async (roleId, permissionIds) => {
   }
 };
 
+
 export const getRolePermissions = async (roleId) => {
   try {
     const response = await apiClient.get(`/roles/${roleId}/permissions/`);
@@ -296,6 +425,20 @@ export const getRolePermissions = async (roleId) => {
     return [];
   }
 };
+
+// New API function to get a role by ID
+export const getRoleById = async (id) => {
+  try {
+    const response = await apiClient.get(`/edit-role/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching role by ID:', error);
+    return null;
+  }
+};
+
+// apiHelper.js
+
 
 
 

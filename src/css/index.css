@@ -1,0 +1,128 @@
+.role-table-container {
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  .role-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .role-table-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .add-role-button {
+    background-color: #3496f4;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .btn-width{
+    width:fit-content !important;
+  }
+  
+  .add-role-button:hover {
+    background-color: #267bdc;
+  }
+  
+  .role-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  
+  .role-table th,
+  .role-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .role-table th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #333;
+  }
+  .action-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    margin-right: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .edit-btn {
+    background-color: #ffd966;
+    color: #000;
+  }
+  
+  .edit-btn:hover {
+    background-color: #ffcc33;
+  }
+  
+  .delete-btn {
+    background-color: #f66;
+    color: #fff;
+  }
+  
+  .delete-btn:hover {
+    background-color: #e60000;
+  }
+  .pagination {
+    display: flex;
+    justify-content: right;
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    padding: 6px 10px;
+    margin: 0 4px;
+    border: none;
+    background-color: #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .pagination button:hover {
+    background-color: #bbb;
+  }
+  
+  .pagination button:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+  }
+  
+  .pagination .active-page {
+    background-color: #3496f4;
+    color: white;
+  }
+  .form-buttons {
+    display: flex;          /* keep them on one row */
+    justify-content: flex-start;  /* ⬅️ align left */
+    gap: 12px;              /* space between Back & Submit */
+    margin-top: 24px;       /* breathing room above */
+  }
+  .back-btn {
+    background-color: #6c757d;   /* pick any color you like */
+  }
+  
+  .back-btn:hover {
+    background-color: #5a6268;   /* slightly darker on hover */
+  }  

@@ -1,0 +1,68 @@
+.add-role-form-container {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: auto;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    font-weight: 600;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    width: fit-content;
+    
+
+  }
+  
+  .submit-btn {
+    background-color: #3496f4;
+    color: white;
+  }
+  
+  .submit-btn:hover {
+    background-color: #267bdc;
+  }
+  
+  .cancel-btn {
+    background-color: #f66;
+    color: white;
+    margin-top: 10px;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #e60000;
+  }
+  
+  .error-message {
+    color: red;
+    font-size: 12px;
+  }
+  
