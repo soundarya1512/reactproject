@@ -355,8 +355,7 @@ export const getUsers = async () => {
 };
 
 //add user
-
-export const addUsers = async (payload) => {
+export const addUser = async (payload) => {
   try {
     const response = await apiClient.post('/users/', payload);
     return response.data;
@@ -366,28 +365,40 @@ export const addUsers = async (payload) => {
   }
 };
 
-
 ///delete user
 export const deleteUser = async (id) => {
   try {
-    const response = await apiClient.delete(`/users/${id}`);
-    return { success: true, data: response.data };
+    await apiClient.delete(`/users/${id}/`);
+    return { success: true };
   } catch (error) {
     console.error('Error deleting user:', error);
-    return { success: false };
-  }
-};
-// Update user 
-export const updateUser = async (id, ownershipData) => {
-  try {
-    const response = await apiClient.put(`/edit-ownership/${id}/`, ownershipData);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating ownership:', error);
-    throw error; // Make sure errors are thrown to be handled in the calling component
+    return {
+      success: false,
+      error: error.response?.data || 'Failed to delete user',
+    };
   }
 };
 
+// Update user 
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await apiClient.put(`/users/${id}/`, userData); // Adjust endpoint if needed
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+};
+/////////user get data by id
+export const getUserById = async (id) => {
+  try {
+    const response = await apiClient.get(`/users/${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users by ID:', error);
+    return null;
+  }
+};
 /////////////////////edit :: user///////////////////////////////
 // ====== Permissions API ======
 

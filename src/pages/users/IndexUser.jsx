@@ -35,17 +35,29 @@ const IndexUser = () => {
     navigate(`/edit-user/${id}`);
   };
 
+  // const handleDelete = async (id) => {
+  //   if (window.confirm('Are you sure you want to delete this user?')) {
+  //     const response = await deleteUser(id); // ✅ use correct function
+  //     if (response.success) {
+  //       alert('User deleted successfully!');
+  //       setUsers(prevUsers => prevUsers.filter(user => user.id !== id)); // ✅ update UI
+  //     } else {
+  //       alert('Failed to delete user.');
+  //     }
+  //   }
+  // };
+
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      const response = await deleteUser(id); // ✅ use correct function
-      if (response.success) {
-        alert('User deleted successfully!');
-        setUsers(prevUsers => prevUsers.filter(user => user.id !== id)); // ✅ update UI
-      } else {
-        alert('Failed to delete user.');
+      if (window.confirm('Are you sure you want to delete this user?')) {
+        const response = await deleteUser(id);
+        if (response.success) {
+          alert('User deleted successfully!');
+          setUsers(users.filter(user => user.id !== id));
+        } else {
+          alert('Failed to delete user');
+        }
       }
-    }
-  };
+    };
 
   return (
     <div className="role-table-container">
@@ -72,8 +84,10 @@ const IndexUser = () => {
                 <td>{user.id}</td>
                 <td>{user.username}</td>
                 <td>{user.email}</td>
-                <td>{user.is_active ? "Active" : "Inactive"}</td>
-                <td>{user.is_superuser ? "Yes" : "No"}</td>
+                {/* <td>{user.is_active ? "ctive" : "Inactive"}</td> */}
+                <td>{user.is_active === false ? "Inactive" : "Active"}</td>
+                <td>{user.is_superuser === false ? "Inactive" : "Active"}</td>
+                {/* <td>{user.is_superuser ? "Yes" : "No"}</td> */}
                 <td>
                   <button className="action-btn edit-btn" onClick={() => handleEdit(user.id)}>Edit</button>
                   <button className="action-btn delete-btn" onClick={() => handleDelete(user.id)}>Delete</button>

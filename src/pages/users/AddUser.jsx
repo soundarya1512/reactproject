@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../css/Index.css";
 import "../../css/Form.css";
-import { addUsers } from '../../helpers/apiHelper';  // Import the addUsers function
+import { addUser } from '../../helpers/apiHelper';  // Import the addUsers function
 
 const AddUser = () => {
   const [formData, setFormData] = useState({
@@ -25,9 +25,32 @@ const AddUser = () => {
     setFormData({...formData, [name]: value});
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+    
+  //   const allInputValue = {
+  //     first_name: formData.first_name,
+  //     last_name: formData.last_name,
+  //     username: formData.username,
+  //     email: formData.email,
+  //     phone_number: formData.phone_number,
+  //     password: formData.password,
+  //     is_active: formData.status === 'true',
+  //     is_superuser: formData.super_user === 'true',
+  //     date_joined: formData.date_joined,
+  //   };
+  
+  //   // Show form data in an alert
+  //      // Pretty printed JSON
+  
+  //   // If needed, continue with your API call or logic here
+  //   // await addUsers(allInputValue);
+  //   // navigate("/user-list"); // or wherever you want to go
+  // };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     const allInputValue = {
       first_name: formData.first_name,
       last_name: formData.last_name,
@@ -35,28 +58,22 @@ const AddUser = () => {
       email: formData.email,
       phone_number: formData.phone_number,
       password: formData.password,
-      is_active: formData.status === 'true',  // Convert string status to boolean
-      is_superuser: formData.super_user === 'true',  // Convert string super_user to boolean
+      is_active: formData.status === 'true',
+      is_superuser: formData.super_user === 'true',
       date_joined: formData.date_joined,
     };
-
-    try {
-      // Call the addUsers function from apiHelper.js
-      const res = await addUsers(allInputValue);
-      if (res.success) {
-        setMessage('User created successfully!');
-        setTimeout(() => {
-          navigate('/users');  // Redirect to users page after successful creation
-        }, 2000);
-      } else {
-        setMessage('Failed to create user. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error while adding user:', error);
-      setMessage('An error occurred while adding the user.');
+    alert(JSON.stringify(allInputValue, null, 2));  // Pretty printed JSON
+    const result = await addUser(allInputValue);
+    console.log(allInputValue);
+    if (result) {
+      setMessage('User created successfully!');
+      navigate('/users');
+    } else {
+      setMessage('Failed to create user. Please check the input.');
     }
   };
 
+  
   const isFormValid = formData.first_name && formData.last_name && formData.email && formData.password;
 
   return (
@@ -110,7 +127,7 @@ const AddUser = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              required
+              
             />
           </div>
           <div className="form-group col-6">
@@ -151,7 +168,7 @@ const AddUser = () => {
               className="status"
               name="status"
               value="true"
-              checked={formData.status === 'true'}
+              checked
               onChange={handleChange}
             /> Active&nbsp;
             <input
@@ -159,10 +176,11 @@ const AddUser = () => {
               className="status"
               name="status"
               value="false"
-              checked={formData.status === 'false'}
+              
               onChange={handleChange}
             /> Inactive
           </div>
+
           <div className="form-group col-6">
             <label className="form-label">Super User</label><br />
             <input
@@ -170,7 +188,7 @@ const AddUser = () => {
               className="super_user"
               name="super_user"
               value="true"
-              checked={formData.super_user === 'true'}
+             
               onChange={handleChange}
             /> Active&nbsp;
             <input
@@ -178,10 +196,11 @@ const AddUser = () => {
               className="super_user"
               name="super_user"
               value="false"
-              checked={formData.super_user === 'false'}
+              checked
               onChange={handleChange}
             /> Inactive
           </div>
+
         </div>
 
         <div className="form-buttons">
