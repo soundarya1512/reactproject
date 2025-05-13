@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getUserById, updateUser } from '../../helpers/apiHelper';
+import { getUserById, updateUser, getRoles, getUserRole, assignRoleToUser  } from '../../helpers/apiHelper';
 import "../../css/Index.css";
 import "../../css/Form.css";
+import { Select } from 'antd';
 // import { json } from 'stream/consumers';
 
 const EditUser = () => {
@@ -23,24 +24,42 @@ const EditUser = () => {
 
   const [message, setMessage] = useState('');
   const [isFormValid, setIsFormValid] = useState(true);
-
+  const [roles, setRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState([]);
   
 
+  
   useEffect(() => {
-    const fetchUser = async () => {
-      const user = await getUserById(id);
-      if (user) {
-        setFormData({
-          ...user,
-          status: user.is_active,  // Directly use the boolean value for is_active
-          super_user: user.is_superuser,  // Directly use the boolean value for is_superuser
-          date_joined: user.date_joined ? new Date(user.date_joined).toISOString().slice(0, 16) : ''
-        });
+    const fetchData = async () => {
+      try {
+        const user = await getUserById(id);
+        if (user) {
+          setFormData({
+            ...user,
+            status: user.is_active,
+            super_user: user.is_superuser,
+            date_joined: user.date_joined ? new Date(user.date_joined).toISOString().slice(0, 16) : ''
+          });
+        }
+  
+        const roleList = await getRoles();
+        setRoles(roleList);
+  
+        const userRoleRes = await getUserRole(id); // returns { groups: ['Sub Admin', 'New User'] }
+        const selectedRoles = roleList
+          .filter(role => userRoleRes.groups.includes(role.name)) // Match role names
+          .map(role => role.id); // Convert to IDs for Select
+  
+        setSelectedRole(selectedRoles); // This makes roles appear selected in the dropdown
+  console.log(selectedRoles);
+      } catch (error) {
+        console.error("Error loading user roles:", error);
       }
     };
-    fetchUser();
-  }, [id]);
   
+    fetchData();
+  }, [id]);
+    
 
 
   const handleChange = (e) => {
@@ -58,9 +77,9 @@ const EditUser = () => {
     try {
       // Build payload without status and super_user
       const {
-        status,        // exclude
-        super_user,    // exclude
-        ...cleanData   // everything else
+        status,
+        super_user,
+        ...cleanData
       } = formData;
   
       const payload = {
@@ -71,7 +90,14 @@ const EditUser = () => {
   
       console.log("Payload to submit:", payload);
   
+      // Update user basic info
       await updateUser(id, payload);
+  
+      // Update user roles
+      // await updateUserRole(id, { groups: selectedRole }); // selectedRole is an array of role IDs
+   const assignResponse = await assignRoleToUser(id, selectedRole);
+     console.log("Role assignment response:", assignResponse);
+  
       setMessage('User updated successfully!');
       setTimeout(() => navigate('/users'), 1000);
     } catch (error) {
@@ -104,6 +130,23 @@ const EditUser = () => {
             <label className="form-label">Email</label>
             <input type="email" name="email" value={formData.email} onChange={handleChange} className="input-role-name" required />
           </div>
+          <div className="form-group col-6">
+            <label className="form-label">Role</label>
+            {/* <Select mode="multiple" placeholder="Select Role(s)" value={selectedRole} onChange={setSelectedRole} options={roles.map(r => ({ label: r.name, value: r.id }))} style={{ width: '100%' }} /> */}
+
+            <Select
+  mode="multiple"
+  placeholder="Select Role(s)"
+  value={selectedRole}
+  onChange={setSelectedRole}
+  options={roles.map(role => ({ label: role.name, value: role.id }))}
+  style={{ width: '50%' }}
+/>
+
+          </div>
+
+
+
           <div className="form-group col-6">
             <label className="form-label">Username</label>
             <input type="text" name="username" value={formData.username} onChange={handleChange} className="input-role-name" required />

@@ -35,29 +35,19 @@ const IndexUser = () => {
     navigate(`/edit-user/${id}`);
   };
 
-  // const handleDelete = async (id) => {
-  //   if (window.confirm('Are you sure you want to delete this user?')) {
-  //     const response = await deleteUser(id); // ✅ use correct function
-  //     if (response.success) {
-  //       alert('User deleted successfully!');
-  //       setUsers(prevUsers => prevUsers.filter(user => user.id !== id)); // ✅ update UI
-  //     } else {
-  //       alert('Failed to delete user.');
-  //     }
-  //   }
-  // };
-
   const handleDelete = async (id) => {
-      if (window.confirm('Are you sure you want to delete this user?')) {
-        const response = await deleteUser(id);
-        if (response.success) {
-          alert('User deleted successfully!');
-          setUsers(users.filter(user => user.id !== id));
-        } else {
-          alert('Failed to delete user');
-        }
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      const response = await deleteUser(id); // ✅ use correct function
+      if (response.success) {
+        alert('User deleted successfully!');
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== id)); // ✅ update UI
+      } else {
+        alert('Failed to delete user.');
       }
-    };
+    }
+  };
+
+  
 
   return (
     <div className="role-table-container">

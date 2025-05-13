@@ -37,15 +37,41 @@
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    /* margin-bottom: 24px; */
+  
     margin-left: 15px;
   }
+
+  /* .input-role-name {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-left: 0; 
+  } */
+  
   
   /* Group wrapper */
   .form-group {
     margin-bottom: 24px;
   }
   
+  /* .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+  } */
+  
+  /* .form-label {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #333;
+  } */
+  
+
+
+
   /* Checkbox layout */
   .checkbox-group {
     display: flex;

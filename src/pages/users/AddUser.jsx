@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../../css/Index.css";
 import "../../css/Form.css";
-import { addUser } from '../../helpers/apiHelper';  // Import the addUsers function
+import { Select } from 'antd';
+import { addUser , getRoles, assignRoleToUser } from '../../helpers/apiHelper';  // Import the addUsers function
+
 
 const AddUser = () => {
+
+  const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -20,38 +26,33 @@ const AddUser = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const roleList = await getRoles();
+        setRoles(Array.isArray(roleList) ? roleList : []);
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+      }
+    };
+  
+    fetchRoles();
+  }, []);
+  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({...formData, [name]: value});
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-    
-  //   const allInputValue = {
-  //     first_name: formData.first_name,
-  //     last_name: formData.last_name,
-  //     username: formData.username,
-  //     email: formData.email,
-  //     phone_number: formData.phone_number,
-  //     password: formData.password,
-  //     is_active: formData.status === 'true',
-  //     is_superuser: formData.super_user === 'true',
-  //     date_joined: formData.date_joined,
-  //   };
+ 
   
-  //   // Show form data in an alert
-  //      // Pretty printed JSON
-  
-  //   // If needed, continue with your API call or logic here
-  //   // await addUsers(allInputValue);
-  //   // navigate("/user-list"); // or wherever you want to go
-  // };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Selected Roles during submit:", selectedRole);
   
-    const allInputValue = {
+    const userPayload = {
       first_name: formData.first_name,
       last_name: formData.last_name,
       username: formData.username,
@@ -62,17 +63,42 @@ const AddUser = () => {
       is_superuser: formData.super_user === 'true',
       date_joined: formData.date_joined,
     };
-    alert(JSON.stringify(allInputValue, null, 2));  // Pretty printed JSON
-    const result = await addUser(allInputValue);
-    console.log(allInputValue);
-    if (result) {
-      setMessage('User created successfully!');
-      navigate('/users');
-    } else {
-      setMessage('Failed to create user. Please check the input.');
+  
+    console.log('Payload being sent:', userPayload);
+  
+    try {
+      const newUser = await addUser(userPayload);
+      const userId = newUser?.id;
+  
+      if (!userId) {
+        setMessage("User creation failed. No ID returned.");
+        return;
+      }
+  
+      const selectedRoleNames = roles
+        .filter(role => selectedRole.includes(role.id))
+        .map(role => role.name);
+
+        console.log("User ID:", userId);
+console.log("Selected Roles:", selectedRole);
+  
+    
+      if (userId) {
+        const assignResponse = await assignRoleToUser(userId, selectedRole);
+        console.log("Role assignment response:", assignResponse);
+  
+        // toast.success("User added and role assigned successfully!");
+        navigate("/users");
+      } else {
+        toast.error("Failed to retrieve user ID");
+      }
+      
+    } catch (error) {
+      console.error("Error creating user or assigning roles:", error);
+      setMessage("Something went wrong while creating the user.");
     }
   };
-
+  
   
   const isFormValid = formData.first_name && formData.last_name && formData.email && formData.password;
 
@@ -119,6 +145,23 @@ const AddUser = () => {
               required
             />
           </div>
+
+
+          <div className="form-group col-6">
+              <label className="form-label">Role</label>
+             
+
+<Select
+        mode="multiple"
+        placeholder="Select Role(s)"
+        value={selectedRole}
+        onChange={setSelectedRole}
+        options={roles.map(r => ({ label: r.name, value: r.id }))}
+        style={{ width: '50%' }}
+        disabled={loading}
+        />
+          </div>
+
           <div className="form-group col-6">
             <label className="form-label">Username</label>
             <input

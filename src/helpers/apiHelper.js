@@ -329,18 +329,7 @@ export const updateOwnership = async (id, ownershipData) => {
 
 ///////////////end::ownership///////////////////////////////////
 
-export const assignRoleToUser = async (userId, roleId) => {
-  try {
-    const response = await apiClient.post('/assign-role/', {
-      user_id: userId,
-      role_id: roleId
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error assigning role:', error);
-    return null;
-  }
-};
+
 /////////////////////start :: user///////////////////////////////
 
 //get user
@@ -355,15 +344,37 @@ export const getUsers = async () => {
 };
 
 //add user
+// export const addUser = async (payload) => {
+//   try {
+//     const response = await apiClient.post('/users/', payload);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error adding user:', error);
+//     throw error;
+//   }
+// };
+
+
 export const addUser = async (payload) => {
   try {
     const response = await apiClient.post('/users/', payload);
+    console.log('sdf:',response.data);
     return response.data;
   } catch (error) {
-    console.error('Error adding user:', error);
-    throw error;
+    if (error.response) {
+      // The server responded with a status code outside 2xx
+      console.error('Error adding user (response):', error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error adding user (no response):', error.request);
+    } else {
+      // Something else went wrong
+      console.error('Error adding user (general):', error.message);
+    }
+    throw error; // re-throw to handle it further in calling code
   }
 };
+
 
 ///delete user
 export const deleteUser = async (id) => {
@@ -400,6 +411,42 @@ export const getUserById = async (id) => {
   }
 };
 /////////////////////edit :: user///////////////////////////////
+/////////////////////start :: assign role to user////////////////////////////////////
+
+export const assignRoleToUser = async (userId, roleIds) => {
+  try {
+    const payload = { groups: roleIds }; // Changed from role_ids to groups
+    console.log('Sending PATCH to assign-role with:', payload, userId);
+    const response = await apiClient.patch(`/assign-role/${userId}/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning role(s):', error);
+    return null;
+  }
+};
+
+
+export const getUserRole = async (id, userData) => {
+  try {
+    const response = await apiClient.get(`/user-rolelist/${id}/`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user assigned role:', error);
+    throw error;
+  }
+};
+
+export const updateUserRole = async (id, userData) => {
+  try {
+    const response = await apiClient.patch(`/user-rolelist/${id}/`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user assigned role:', error);
+    throw error;
+  }
+};
+
+//////////////////end :: assign role to user///////////////////////////////////////
 // ====== Permissions API ======
 
 export const getPermissions = async () => {
